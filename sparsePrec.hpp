@@ -1,12 +1,12 @@
 
-#ifndef _CDTPREC_HPP_
-#define _CDTPREC_HPP_
+#ifndef _SPARSEPREC_HPP_
+#define _SPARSEPREC_HPP_
 
 #include <cmath>
 
 #include "genericfp.hpp"
 
-namespace CDTPrec {
+namespace SparsePrec {
 
 template <typename fptype>
 class DoublePrec;
@@ -20,6 +20,18 @@ class CPrec {
   }
 
   CPrec(single val = NAN) { this->val = val; }
+
+  constexpr bool isPlus() const {
+    return !std::isnan(val) && (val > 0.0);
+  }
+
+  constexpr bool isZero() const {
+    return !std::isnan(val) && (val == 0.0);
+  }
+
+  constexpr bool isNeg() const {
+    return !std::isnan(val) && (val < 0.0);
+  }
 
   template <typename fp>
   constexpr bool operator==(fp rhs) const {
@@ -92,6 +104,23 @@ class DoublePrec {
 
   constexpr DoublePrec<DoublePrec<single>> operator+(
       single rhs) const {
+    /* I'm uncertain whether the cost of branch predicition
+     * is better or worse than just doing all of the
+     * floating point operations, but this is much cleaner,
+     * so keep this
+     */
+    if(greater < rhs) {
+      return DoublePrec<DoublePrec<single>>(
+          greater + rhs, DoublePrec<single>(lesser, 0.0));
+    } else if(rhs < lesser) {
+      // We don't know if rhs is small enough
+      DoublePrec<single> sum1(lesser + rhs);
+      // We know sum1.lesser is totally safe
+      DoublePrec<single> sum2(sum1.greater + greater);
+      return DoublePrec<DoublePrec<single>>(
+          sum2, DoublePrec<single>(sum1.lesser, 0.0));
+    } else {
+    }
     single larger((greater > rhs) ? greater : rhs);
     single smaller((greater < rhs) ? greater : rhs);
     single sum(larger + smaller);
@@ -100,6 +129,13 @@ class DoublePrec {
     return DoublePrec<DoublePrec<single>>(
         DoublePrec<single>(sum),
         DoublePrec<single>(correct));
+  }
+
+  constexpr DoublePrec<DoublePrec<single>> operator+(
+      DoublePrec rhs) const {
+    DoublePrec<DoublePrec<single>> sum;
+    
+    return sum;
   }
 
   constexpr bool operator==(DoublePrec<single> rhs) const {
@@ -113,7 +149,9 @@ class DoublePrec {
             (lesser > rhs.greater));
   }
 
-  constexpr operator single() const { return greater; }
+  constexpr explicit operator single() const {
+    return greater;
+  }
   constexpr operator DoublePrec<DoublePrec<single>>()
       const {
     DoublePrec<DoublePrec<single>> ret();
