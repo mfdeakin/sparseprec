@@ -1,16 +1,5 @@
 
-#include "cdtprec.hpp"
-#include <gtest/gtest.h>
-
-#include <iostream>
-
-using spfloat = CDTPrec::CPrec<float>;
-using dpfloat = CDTPrec::CPrec<double>;
-using lpfloat = CDTPrec::CPrec<long double>;
-
-using spdouble = CDTPrec::DoublePrec<spfloat>;
-using dpdouble = CDTPrec::DoublePrec<dpfloat>;
-using lpdouble = CDTPrec::DoublePrec<lpfloat>;
+#include "testDefs.hpp"
 
 TEST(TestCPrec, Precision) {
   EXPECT_EQ(spfloat::getPrec(), 24);
@@ -20,6 +9,12 @@ TEST(TestCPrec, Precision) {
 	EXPECT_EQ(spdouble::getPrec(), 48);
 	EXPECT_EQ(dpdouble::getPrec(), 106);
 	EXPECT_EQ(lpdouble::getPrec(), 130);
+}
+
+TEST(TestCPrec, Sign) {
+  EXPECT_EQ(spfloat(0.0).isPlus(), false);
+  EXPECT_EQ(spfloat(0.0).isZero(), true);
+  EXPECT_EQ(spfloat(0.0).isNeg(), false);
 }
 
 TEST(TestCPrec, CompareFloat) {

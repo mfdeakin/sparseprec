@@ -1,7 +1,5 @@
 
-#include "cdtprec.hpp"
-
-#include <gtest/gtest.h>
+#include "testDefs.hpp"
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
