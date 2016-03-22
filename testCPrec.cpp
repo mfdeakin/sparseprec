@@ -105,6 +105,12 @@ TEST(TestCPrec, Multiplication) {
                     spfloat(std::copysign(
                         (float)prod.lowerOrder(),
                         (float)prod.higherOrder())));
+          spdouble nonOverlapping(prod.higherOrder() +
+                                  prod.lowerOrder());
+          EXPECT_EQ(prod.higherOrder(),
+                    nonOverlapping.higherOrder());
+          EXPECT_EQ(prod.lowerOrder(),
+                    nonOverlapping.lowerOrder());
         }
       }
     }
