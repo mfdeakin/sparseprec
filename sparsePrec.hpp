@@ -36,6 +36,10 @@ class CPrec {
     return !std::isnan(val) && (val < 0.0);
   }
 
+  constexpr single sign() const {
+    return std::copysign(1.0, val);
+  }
+
   template <typename fp>
   constexpr bool operator==(fp rhs) const {
     return val == rhs.val;
@@ -66,6 +70,15 @@ class CPrec {
     return val != rhs.val;
   }
 
+  static single fmaRounded(single a, single b, single c) {
+    return std::fma(a, b, c);
+  }
+
+  static single fmaRounded(CPrec<single> a, CPrec<single> b,
+                           CPrec<single> c) {
+    return std::fma(a.val, b.val, c.val);
+  }
+
   constexpr explicit operator single() const { return val; }
 
   constexpr operator DoublePrec<CPrec<single>>() const {
@@ -81,6 +94,14 @@ class CPrec {
     single correct = smaller - err;
     return DoublePrec<CPrec<single>>(
         CPrec<single>(sum), CPrec<single>(correct));
+  }
+
+  constexpr DoublePrec<CPrec<single>> operator*(
+      CPrec<single> rhs) const {
+    single high = val * rhs.val;
+    single low = fmaRounded(val, rhs.val, -high);
+    return DoublePrec<CPrec<single>>(CPrec<single>(high),
+                                     CPrec<single>(low));
   }
 
   template <typename>

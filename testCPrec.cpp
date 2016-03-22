@@ -6,9 +6,9 @@ TEST(TestCPrec, Precision) {
   EXPECT_EQ(dpfloat::getPrec(), 53);
   EXPECT_EQ(lpfloat::getPrec(), 65);
 
-	EXPECT_EQ(spdouble::getPrec(), 48);
-	EXPECT_EQ(dpdouble::getPrec(), 106);
-	EXPECT_EQ(lpdouble::getPrec(), 130);
+  EXPECT_EQ(spdouble::getPrec(), 48);
+  EXPECT_EQ(dpdouble::getPrec(), 106);
+  EXPECT_EQ(lpdouble::getPrec(), 130);
 }
 
 TEST(TestCPrec, Sign) {
@@ -66,12 +66,47 @@ TEST(TestCPrec, Addition) {
       lhs += 4096.0f) {
     for(float rhs = 0.0; rhs != (float)rhs + 1.0f;
         rhs += 4096.0f) {
-      spdouble sum(spfloat(lhs) + spfloat(rhs));
-      EXPECT_EQ(sum.higherOrder(), spfloat(lhs + rhs));
-			float sRounded = lhs + rhs;
-			float truncated = sRounded - ((lhs > rhs) ? lhs : rhs);
-			float err = ((lhs > rhs) ? rhs : lhs) - truncated;
-			EXPECT_EQ(sum.lowerOrder(), spfloat(err));
+      for(int i = 0; i < 2; i++) {
+        lhs = -lhs;
+        for(int j = 0; j < 2; j++) {
+          rhs = -rhs;
+          spdouble sum(spfloat(lhs) + spfloat(rhs));
+          EXPECT_EQ(sum.higherOrder(), spfloat(lhs + rhs));
+          float sRounded = lhs + rhs;
+          float truncated =
+              sRounded - ((lhs > rhs) ? lhs : rhs);
+          float err = ((lhs > rhs) ? rhs : lhs) - truncated;
+          EXPECT_EQ(sum.lowerOrder(), spfloat(err));
+          EXPECT_EQ(sum.lowerOrder(),
+                    spfloat(std::copysign(
+                        (float)sum.lowerOrder(),
+                        (float)sum.higherOrder())));
+        }
+      }
+    }
+  }
+}
+
+TEST(TestCPrec, Multiplication) {
+  for(float lhs = 0.0; lhs != (float)lhs + 1.0f;
+      lhs += 4096.0f) {
+    for(float rhs = 0.0; rhs != (float)rhs + 1.0f;
+        rhs += 4096.0f) {
+      for(int i = 0; i < 2; i++) {
+        lhs = -lhs;
+        for(int j = 0; j < 2; j++) {
+          rhs = -rhs;
+          spdouble prod(spfloat(lhs) * spfloat(rhs));
+          EXPECT_EQ(prod.higherOrder(), spfloat(lhs * rhs));
+          float sRounded = lhs * rhs;
+          float err = std::fma(lhs, rhs, -sRounded);
+          EXPECT_EQ(prod.lowerOrder(), spfloat(err));
+          EXPECT_EQ(prod.lowerOrder(),
+                    spfloat(std::copysign(
+                        (float)prod.lowerOrder(),
+                        (float)prod.higherOrder())));
+        }
+      }
     }
   }
 }

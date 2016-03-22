@@ -4,8 +4,8 @@ project(cdtprec)
 
 file(GLOB TESTSRC "./test*.cpp")
 
-add_executable(testCDT ${TESTSRC})
+add_executable(testSparsePrec ${TESTSRC})
 
-target_link_libraries(testCDT gtest pthread)
+target_link_libraries(testSparsePrec gtest pthread)
 
-set_target_properties(testCDT PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
+set_target_properties(testSparsePrec PROPERTIES COMPILE_FLAGS "-std=c++11 -Wall")
