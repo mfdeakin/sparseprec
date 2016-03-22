@@ -11,6 +11,9 @@ namespace SparsePrec {
 template <typename fptype>
 class DoublePrec;
 
+template <typename fptype>
+class TriplePrec;
+
 template <typename hwfloat>
 class CPrec {
  public:
@@ -131,10 +134,26 @@ class DoublePrec {
         DoublePrec<single>(correct));
   }
 
+  // Currently assumes everything is positive
   constexpr DoublePrec<DoublePrec<single>> operator+(
       DoublePrec rhs) const {
+    if(rhs < *this) {
+      // Swap the orders to make the computation easier
+      return (rhs + *this);
+    }
+    // *this <= rhs
     DoublePrec<DoublePrec<single>> sum;
-    
+    DoublePrec<single> highest = greater + rhs.greater;
+    sum.greater.greater = highest.greater;
+    // Now exactly compute
+    // highest.lesser + lesser + rhs.lesser
+    single *alpha, *beta, *gamma;
+    sort3(highest.lesser, lesser, rhs.lesser, &alpha, &beta,
+          &gamma);
+    // *alpha > *beta > *gamma
+    DoublePrec<single> mid1 = *alpha + *beta;
+    sum.greater.lesser = mid1.greater;
+    sum.lesser = mid1.lesser + *beta;
     return sum;
   }
 
@@ -162,4 +181,36 @@ class DoublePrec {
   single lesser;
 };
 };
+
+template <typename fptype>
+void sort3(const fptype &a, const fptype &b,
+           const fptype &c, fptype *&high, fptype *&mid,
+           fptype *&low) {
+  if(a > b) {
+    sort3Helper(a, b, c, high, mid, low);
+  } else {
+    sort3Helper(b, a, c, high, mid, low);
+  }
+}
+
+template <typename fptype>
+void sort3Helper(const fptype &a, const fptype &b,
+                 const fptype &c, fptype *&high,
+                 fptype *&mid, fptype *&low) {
+  if(b > c) {
+    high = &a;
+    mid = &b;
+    low = &c;
+  } else {
+    if(a > c) {
+      high = &a;
+      mid = &c;
+    } else {
+      high = &c;
+      mid = &a;
+    }
+    low = &b;
+  }
+}
+
 #endif
